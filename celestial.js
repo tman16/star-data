@@ -1213,7 +1213,7 @@ function checkOffStarMap({ pt, text_metrics }) {
       star6_data = {},//require('./stars.6.json'),
       star8_data = require('./stars.8.json'),
       starnames_data = require('./starnames.json'),
-      planets_data = require('./planets.json'),
+      planets_data = require('./planets.json')
       //{ checkTextCollision, getPlanetSVG } = require('../../helpers/helpers.js');
     module.exports = {
       Celestial: function () { return Celestial; },
@@ -6341,3 +6341,4 @@ function checkOffStarMap({ pt, text_metrics }) {
   this.Celestial = Celestial;
 
 })();
+
