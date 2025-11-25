@@ -1,5 +1,147 @@
 // Copyright 2015-2020 Olaf Frohn https://github.com/ofrohn, see LICENSE
 !(function () {
+  function getPlanetSVG({code}) {
+    if (code==='mer') return mer.default;
+    if (code==='ven') return ven.default;
+    if (code==='ter') return ter.default;
+    if (code==='mar') return mar.default;
+    if (code==='jup') return jup.default;
+    if (code==='sat') return sat.default;
+    if (code==='nep') return nep.default;
+    if (code==='ura') return ura.default;
+    if (code==='sol') return sol.default;
+    if (code==='lun') return lun.default;
+    return false;
+}
+  function checkTextCollision({ pt, text_metrics, constellation_names_rects }) {
+    let current_pt = pt;
+    //Initially check if coords are off star map
+    let check_off_star_map = checkOffStarMap({pt,text_metrics});
+    if (!!check_off_star_map) {
+        //Detected off the star map now adjust
+        current_pt=check_off_star_map;
+    };
+    let initial_check_hit = hit_checker({ pt: current_pt, text_metrics, constellation_names_rects });
+
+    if (initial_check_hit) {
+        let check_hit = true;
+        let multiplier = 0.25;
+        //update current_pt
+        do {
+            let test_arr = [
+                {x_adj:0,y_adj:1},
+                {x_adj:0,y_adj:-1},
+                {x_adj:-1,y_adj:-1},
+                {x_adj:1,y_adj:1},
+                {x_adj:1,y_adj:0},
+                {x_adj:-1,y_adj:0},
+            ];
+            for (let test1 of test_arr) {
+                let w = text_metrics.width;
+                let h = text_metrics.actualBoundingBoxDescent+text_metrics.actualBoundingBoxAscent;
+                let loop_pt = [current_pt[0]+(test1.x_adj*(w/8)*multiplier),current_pt[1]+(test1.y_adj*(h/2)*multiplier)];
+                let loop_check_hit = hit_checker({ pt: loop_pt, text_metrics, constellation_names_rects });
+                if (!loop_check_hit) {
+                    let loop_check_off_star_map = checkOffStarMap({pt:loop_pt,text_metrics});
+                    if (!loop_check_off_star_map) {
+                        current_pt=loop_pt;
+                        check_hit=false;
+                    };
+                }
+            };
+            if (multiplier > 3) check_hit=false;
+            multiplier+=0.25;
+        } while (check_hit);
+        return current_pt;
+    }
+    return current_pt;
+
+}
+function hit_checker({ pt, text_metrics, constellation_names_rects }) {
+    let hit_checker_pt = pt;
+    let check_off_star_map = checkOffStarMap({pt,text_metrics});
+    if (!!check_off_star_map) {
+        hit_checker_pt=check_off_star_map;
+    }
+    let tl = [hit_checker_pt[0]-(text_metrics.width/2),hit_checker_pt[1]-text_metrics.actualBoundingBoxAscent];
+    let br = [hit_checker_pt[0]+(text_metrics.width/2),hit_checker_pt[1]+text_metrics.actualBoundingBoxDescent];
+    for (let drawn_const_names of constellation_names_rects) {
+        if (
+            //check top left corner
+            tl[0] >= drawn_const_names.tl[0]
+            && tl[0] <= drawn_const_names.br[0]
+            && tl[1] >= drawn_const_names.tl[1]
+            && tl[1] <= drawn_const_names.br[1]
+        ) {
+            console.log('COLISSION DETECTED AT 1');
+            return true
+        }
+        //check top right corner
+        if (tl[0] + text_metrics.width >= drawn_const_names.tl[0]
+            && tl[0] + text_metrics.width <= drawn_const_names.br[0]
+            && tl[1] >= drawn_const_names.tl[1]
+            && tl[1] <= drawn_const_names.br[1]
+        ) {
+            console.log('COLISSION DETECTED AT 2');
+            return true
+        }
+        //check bottom left corner
+        if (tl[0] >= drawn_const_names.tl[0]
+            && tl[0] <= drawn_const_names.br[0]
+            && tl[1] + text_metrics.actualBoundingBoxAscent + text_metrics.actualBoundingBoxDescent >= drawn_const_names.tl[1]
+            && tl[1] + text_metrics.actualBoundingBoxAscent + text_metrics.actualBoundingBoxDescent <= drawn_const_names.br[1]
+        ) {
+            console.log('COLISSION DETECTED AT 3');
+            return true;
+        }
+        if (br[0] >= drawn_const_names.tl[0]
+            && br[0] <= drawn_const_names.br[0]
+            && br[1] >= drawn_const_names.tl[1]
+            && br[1] <= drawn_const_names.br[1]
+        ) {
+            console.log('COLISSION DETECTED AT 4')
+            return true;
+        }
+    }
+    return false
+}
+
+function checkOffStarMap({ pt, text_metrics }) {
+    let initial_pt = [...pt];
+    //Check Horizontal
+    if (pt[0] - (text_metrics.width / 2) < (500-480)/2) {
+        console.log('OFFTHEPAGE-LEFT');
+        initial_pt=[
+            10+text_metrics.width,
+            //initial_pt[0] + ( ((500-480)/2) - (initial_pt[0] - (text_metrics.width / 2)) ),
+            initial_pt[1]
+        ]
+    } else if (pt[0] + (text_metrics.width / 2) > 500-((500-480)/2)) {
+        console.log('OFFTHEPAGE-RIGHT');
+        initial_pt=[
+            490-text_metrics.width,
+            //initial_pt[0] - ( (initial_pt[0] + (text_metrics.width / 2)) - (500-((500-480)/2)) ),
+            initial_pt[1]
+        ]
+    };
+    //Check Vertical
+    if (pt[1] - text_metrics.actualBoundingBoxAscent < ((500-480)/2)) {
+        console.log('OFFTHEPAGE-TOP');
+        initial_pt=[
+            initial_pt[0],
+            10+text_metrics.actualBoundingBoxAscent+ text_metrics.actualBoundingBoxDescent
+            //initial_pt[1] + ( ((500-480)/2) - (initial_pt[1] - text_metrics.actualBoundingBoxAscent ) )
+        ]
+    } else if (pt[1] + text_metrics.actualBoundingBoxDescent > 500-((500-480)/2)) {
+        console.log('OFFTHEPAGE-BOTTOM');
+        initial_pt=[
+            initial_pt[0],
+            490-text_metrics.actualBoundingBoxAscent-text_metrics.actualBoundingBoxDescent
+            //initial_pt[1] - ( (initial_pt[1] + text_metrics.actualBoundingBoxDescent) - (500-((500-480)/2)) )
+        ]
+    };
+    return initial_pt[0]===pt[0] && initial_pt[1]===pt[1] ? false : initial_pt;
+}
   var Celestial = {
     version: '0.7.35',
     container: null,
@@ -1072,7 +1214,7 @@
       star8_data = require('./stars.8.json'),
       starnames_data = require('./starnames.json'),
       planets_data = require('./planets.json'),
-      { checkTextCollision, getPlanetSVG } = require('../../helpers/helpers.js');
+      //{ checkTextCollision, getPlanetSVG } = require('../../helpers/helpers.js');
     module.exports = {
       Celestial: function () { return Celestial; },
       d3: function () { return d3js; },
@@ -6197,4 +6339,5 @@
 
   })));
   this.Celestial = Celestial;
+
 })();
