@@ -1726,9 +1726,9 @@ function checkOffStarMap({ pt, text_metrics }) {
     orientationfixed: true,  // Keep orientation angle the same as center[2]
     zoomlevel: null,    // initial zoom level 0...zoomextend; 0|null = default, 1 = 100%, 0 < x <= zoomextend
     zoomextend: 10,     // maximum zoom level
-    adaptable: true,    // Sizes are increased with higher zoom-levels
-    interactive: true,  // Enable zooming and rotation with mousewheel and dragging
-    disableAnimations: false, // Disable all animations
+    adaptable: false,    // Sizes are increased with higher zoom-levels
+    interactive: false,  // Enable zooming and rotation with mousewheel and dragging
+    disableAnimations: true, // Disable all animations
     form: false,        // Display settings form
     location: false,    // Display location settings, deprecated, use formFields
     // Set visiblity for each group of fields of the form
@@ -1743,10 +1743,10 @@ function checkOffStarMap({ pt, text_metrics }) {
     // Default: desig or empty string for designations, other languages as used anywhere else
     culture: "",        // Constellation lines, default "iau"
     container: "celestial-map",   // ID of parent element, e.g. div
-    datapath: "data/",  // Path/URL to data files, empty = subfolder 'data'
+    datapath: "",  // Path/URL to data files, empty = subfolder 'data'
     stars: {
       show: true,    // Show stars
-      limit: 6,      // Show only stars brighter than limit magnitude
+      limit: 7,      // Show only stars brighter than limit magnitude
       colors: true,  // Show stars in spectral colors, if not use fill-style
       style: { fill: "#ffffff", opacity: 1 }, // Default style for stars
       designation: true, // Show star names (Bayer, Flamsteed, Variable star, Gliese or designation, 
@@ -1760,10 +1760,10 @@ function checkOffStarMap({ pt, text_metrics }) {
       propernameLimit: 1.5,  // Show proper names for stars brighter than propernameLimit
       size: 7,       // Scale size (radius) of star circle in pixels
       exponent: -0.28, // Scale exponent for star size, larger = more linear
-      data: "stars.6.json" // Data source for stellar data
+      data: "stars.8.json" // Data source for stellar data
     },
     dsos: {
-      show: true,    // Show Deep Space Objects 
+      show: false,    // Show Deep Space Objects 
       limit: 6,      // Show only DSOs brighter than limit magnitude
       colors: true,  // Show DSOs in symbol colors if true, use style setting below if false
       style: { fill: "#cccccc", stroke: "#cccccc", width: 2, opacity: 1 }, // Default style for dsos
@@ -6341,4 +6341,5 @@ function checkOffStarMap({ pt, text_metrics }) {
   this.Celestial = Celestial;
 
 })();
+
 
